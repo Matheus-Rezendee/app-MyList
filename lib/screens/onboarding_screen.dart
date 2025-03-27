@@ -32,7 +32,7 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: const Color(0xFFF4F5FF), // Cor de fundo clara
+      backgroundColor: const Color(0xFFF4F5FF), 
       body: Column(
         children: [
           Expanded(
@@ -65,7 +65,7 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
     required String description,
   }) {
     return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 30, vertical: 60), // Respeita espaçamentos
+      padding: const EdgeInsets.symmetric(horizontal: 30, vertical: 60), 
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.center,
         children: [
@@ -93,7 +93,7 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
             child: Image.asset(
               image,
               height: 280,
-              fit: BoxFit.contain, // Mantém a proporção da imagem
+              fit: BoxFit.contain,
             ),
           ),
         ],
@@ -126,7 +126,7 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
               }
             },
             style: ElevatedButton.styleFrom(
-              backgroundColor: const Color(0xFF6C5CE7), // Roxo vibrante
+              backgroundColor: const Color(0xFF6C5CE7), 
               foregroundColor: Colors.white,
               minimumSize: const Size(double.infinity, 50),
               shape: RoundedRectangleBorder(
