@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'item.dart';
 
-/// Modelo para representar uma categoria de compras
+
 class Category {
   final String id;
   final String name;
