@@ -16,7 +16,7 @@ class HomeScreen extends StatelessWidget {
     return Scaffold(
       appBar: AppBar(
         title: const Text('Minhas Listas'),
-        backgroundColor: const Color(0xFF6C5CE7), // Cor do AppBar
+        backgroundColor: const Color(0xFF6C5CE7), 
         elevation: 4,
         actions: [
           IconButton(
@@ -31,7 +31,7 @@ class HomeScreen extends StatelessWidget {
           children: <Widget>[
             const DrawerHeader(
               decoration: BoxDecoration(
-                color: Color(0xFF6C5CE7), // Cor do Drawer Header
+                color: Color(0xFF6C5CE7), 
               ),
               child: Text(
                 'Menu',
@@ -145,7 +145,7 @@ class HomeScreen extends StatelessWidget {
     );
   }
 
-  // Tela de "Nenhuma Lista Criada"
+
   Widget _buildEmptyState(BuildContext context) {
     return Column(
       mainAxisAlignment: MainAxisAlignment.center,
@@ -171,7 +171,7 @@ class HomeScreen extends StatelessWidget {
     );
   }
 
-  // Exibe a tela de criação de lista
+  //  tela de criação de lista
   void _showCreateListDialog(BuildContext context) {
     showDialog(
       context: context,
