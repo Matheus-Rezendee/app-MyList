@@ -1,4 +1,4 @@
-/// Modelo para representar um item dentro de uma categoria
+
 class Item {
   final String id;
   final String name;
