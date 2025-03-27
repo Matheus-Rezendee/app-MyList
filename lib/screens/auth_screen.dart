@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../providers/auth_provider.dart';
 
-/// Tela de autenticação reutilizável para Login/Registro
+/// Tela de autenticação 
 class AuthScreen extends StatelessWidget {
   final bool isLogin;
   const AuthScreen({required this.isLogin, super.key});
@@ -14,7 +14,7 @@ class AuthScreen extends StatelessWidget {
         title: Text(isLogin ? 'Login' : 'Registro'),
         backgroundColor: const Color(0xFF6C5CE7),
         elevation: 0,
-        toolbarHeight: 100, // Aumentando a altura para dar um efeito mais moderno
+        toolbarHeight: 100, 
         flexibleSpace: Container(
           decoration: BoxDecoration(
             gradient: LinearGradient(
@@ -155,7 +155,7 @@ class _AuthFormState extends State<AuthForm> {
     );
   }
 
-  // Método para construir campos de texto reutilizáveis
+  
   Widget _buildTextField({
     required TextEditingController controller,
     required String labelText,
