@@ -1,0 +1,42 @@
+name: my_list
+description: "A new Flutter project."
+publish_to: 'none'
+version: 1.0.0+1
+
+environment:
+  sdk: ">=2.17.0 <4.0.0"
+
+dependencies:
+  flutter:
+    sdk: flutter
+  flutter_launcher_icons: ^0.14.3
+  provider: ^6.0.5
+  google_fonts: ^2.2.0
+
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+  flutter_lints: ^5.0.0  
+
+flutter_launcher_icons:  
+  android: "my_list"
+  ios: true
+  image_path: "assets/images/icon.png"
+  adaptive_icon_background: "#6C5CE7"
+  adaptive_icon_foreground: "assets/images/icon.png"
+
+flutter:
+  uses-material-design: true
+  assets:
+    - assets/images/icon.png  
+    - assets/images/bg-onboarding.png  
+
+
+  
+flutter_native_splash:
+  color: "#6C5CE7"
+  image: assets/images/icon.png
+  android: true
+  ios: true
+  fullscreen: true
+   
