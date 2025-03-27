@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 
-/// Tela inicial com animação de apresentação
+
 class SplashScreen extends StatelessWidget {
   const SplashScreen({super.key});
 
