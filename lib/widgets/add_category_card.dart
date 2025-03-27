@@ -14,7 +14,7 @@ class AddCategoryCard extends StatelessWidget {
         side: BorderSide(color: Colors.grey.shade300),
       ),
       child: Material(
-        color: Colors.transparent, // Mantém o fundo do card
+        color: Colors.transparent, 
         borderRadius: BorderRadius.circular(16),
         child: InkWell(
           borderRadius: BorderRadius.circular(16),
