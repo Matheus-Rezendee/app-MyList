@@ -25,7 +25,7 @@ class MyApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-      title: 'Listify Pro',
+      title: 'My List',
       debugShowCheckedModeBanner: false,
       theme: _buildTheme(),
       initialRoute: '/splash',
@@ -61,8 +61,8 @@ class MyApp extends StatelessWidget {
         elevation: 2,
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(16),
-        ), // Correção: Fechamento do RoundedRectangleBorder
-      ), // Correção: Fechamento do CardTheme
+        ), 
+      ), 
     );
   }
 }
