@@ -14,12 +14,12 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
   final List<Map<String, String>> _onboardingData = [
     {
       "image": "assets/images/bg-onboarding.png",
-      "title": "Organize Suas Compras",
-      "description": "Crie listas e gerencie suas compras com facilidade.",
+      "title": "Organize sem complicação",
+      "description": "Chega de papel amassado ou esquecimentos no mercado. Com o My List, você cria listas inteligentes, personalizadas e prontas pra facilitar sua vida.",
     },
     {
       "image": "assets/images/bg-onboarding.png",
-      "title": "Personalização Total",
+      "title": "Sua lista, do seu jeito",
       "description": "Escolha ícones, cores e categorias personalizadas para suas listas.",
     },
     {

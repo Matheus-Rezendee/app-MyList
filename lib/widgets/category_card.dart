@@ -1,15 +1,19 @@
 import 'package:flutter/material.dart';
-import 'package:my_list/screens/category_screen.dart';
+import 'package:provider/provider.dart';
 import '../models/category.dart';
-import 'category_screen.dart';
+import '../providers/list_provider.dart';
+import '../screens/category_screen.dart';
 
-/// Card para exibir uma categoria
 class CategoryCard extends StatelessWidget {
   final Category category;
   const CategoryCard({required this.category, super.key});
 
   @override
   Widget build(BuildContext context) {
+    final itemCount = Provider.of<ListProvider>(context)
+        .getItemsByCategory(category)
+        .length;
+
     return Card(
       elevation: 2,
       shape: RoundedRectangleBorder(
@@ -55,7 +59,7 @@ class CategoryCard extends StatelessWidget {
               ),
               const SizedBox(height: 8),
               Text(
-                '${category.items.length} itens',
+                '$itemCount itens',
                 style: TextStyle(
                   color: Colors.white.withOpacity(0.9),
                 ),

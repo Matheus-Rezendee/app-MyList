@@ -1,85 +1,141 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import '../providers/list_provider.dart';
-import '../models/category.dart';
 import '../models/item.dart';
+import '../models/category.dart';
+import '../providers/list_provider.dart';
 import '../widgets/add_item_dialog.dart';
+import '../services/unsplash_service.dart';
 
-/// Tela que exibe os itens de uma categoria específica
 class CategoryScreen extends StatelessWidget {
   final Category category;
-  const CategoryScreen({required this.category, super.key});
-  
-  get context => null;
+
+  const CategoryScreen({Key? key, required this.category}) : super(key: key);
+
+  void _addItem(BuildContext context) async {
+    final newItem = await showDialog<Item>(
+      context: context,
+      builder: (_) => AddItemDialog(categoryId: category.id),
+    );
+
+    if (newItem != null) {
+      Provider.of<ListProvider>(context, listen: false).addItem(newItem);
+    }
+  }
+
+  void _editItem(BuildContext context, Item item) async {
+    final updatedItem = await showDialog<Item>(
+      context: context,
+      builder: (_) => AddItemDialog(
+        categoryId: category.id,
+        existingItem: item,
+      ),
+    );
+
+    if (updatedItem != null) {
+      Provider.of<ListProvider>(context, listen: false).updateItem(updatedItem);
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
+    final listProvider = Provider.of<ListProvider>(context);
+    final items = listProvider.getItemsByCategory(category);
+    final pendingItems = items.where((item) => !item.isDone).toList();
+    final completedItems = items.where((item) => item.isDone).toList();
+
     return Scaffold(
       appBar: AppBar(
         title: Text(category.name),
-        backgroundColor: category.color,
+        backgroundColor: const Color(0xFF6C5CE7),
       ),
-      body: ListView.builder(
-        padding: const EdgeInsets.all(16),
-        itemCount: category.items.length,
-        itemBuilder: (context, index) => _buildItemCard(category.items[index]),
-      ),
+      body: items.isEmpty
+          ? const Center(child: Text('Nenhum item adicionado ainda.'))
+          : Padding(
+              padding: const EdgeInsets.all(12),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  if (pendingItems.isNotEmpty)
+                    _buildSectionTitle('Pendentes'),
+                  ...pendingItems.map((item) => _buildItemTile(context, item, listProvider)),
+                  if (completedItems.isNotEmpty) ...[
+                    const SizedBox(height: 20),
+                    _buildSectionTitle('Concluídos'),
+                    ...completedItems.map((item) => _buildItemTile(context, item, listProvider)),
+                  ],
+                ],
+              ),
+            ),
       floatingActionButton: FloatingActionButton(
-        backgroundColor: category.color,
-        onPressed: () => _showAddItemDialog(context),
-        child: const Icon(Icons.add_rounded, color: Colors.white),
+        onPressed: () => _addItem(context),
+        backgroundColor: const Color(0xFF6C5CE7),
+        child: const Icon(Icons.add),
       ),
     );
   }
 
-  /// Constrói o card de um item com opções de interação
-  Widget _buildItemCard(Item item) {
-    return Dismissible(
-      key: Key(item.id),
-      direction: DismissDirection.endToStart,
-      background: Container(
-        color: Colors.red,
-        alignment: Alignment.centerRight,
-        padding: const EdgeInsets.only(right: 20),
-        child: const Icon(Icons.delete_rounded, color: Colors.white, size: 40),
-      ),
-      onDismissed: (_) => context.read<ListProvider>().removeItem(category.id, item.id),
-      child: Card(
-        margin: const EdgeInsets.only(bottom: 12),
-        child: ListTile(
-          leading: Checkbox(
-            value: item.isCompleted,
-            onChanged: (_) => context.read<ListProvider>().toggleItemStatus(category.id, item.id),
-            fillColor: MaterialStateProperty.resolveWith<Color>(
-              (states) => item.isCompleted ? category.color : Colors.transparent,
-            ),
-          ),
-          title: Text(
-            item.name,
-            style: TextStyle(
-              decoration: item.isCompleted ? TextDecoration.lineThrough : null,
-              fontSize: 16,
-              fontWeight: FontWeight.w500,
-            ),
-          ),
-          subtitle: Text(
-            'Quantidade: ${item.quantity} | Total: R\$${(item.price * item.quantity).toStringAsFixed(2)}',
-            style: const TextStyle(fontSize: 14),
-          ),
+  Widget _buildSectionTitle(String title) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 8),
+      child: Text(
+        title,
+        style: const TextStyle(
+          fontSize: 18,
+          fontWeight: FontWeight.bold,
         ),
       ),
     );
   }
 
-  /// Exibe o diálogo para adicionar novo item
-  void _showAddItemDialog(BuildContext context) {
-    showDialog(
-      context: context,
-      builder: (context) => const AddItemDialog(),
-    ).then((newItem) {
-      if (newItem != null && newItem is Item) {
-        context.read<ListProvider>().addItem(category.id, newItem);
-      }
-    });
+  Widget _buildItemTile(BuildContext context, Item item, ListProvider provider) {
+    return FutureBuilder<String?>(
+      future: UnsplashService.fetchImageUrl(item.title),
+      builder: (context, snapshot) {
+        return Card(
+          child: ListTile(
+            leading: CircleAvatar(
+              backgroundImage: snapshot.hasData
+                  ? NetworkImage(snapshot.data!)
+                  : const AssetImage('assets/images/placeholder.png')
+                      as ImageProvider,
+              backgroundColor: Colors.grey[200],
+            ),
+            title: Text(
+              item.title,
+              style: TextStyle(
+                decoration: item.isDone ? TextDecoration.lineThrough : null,
+                color: item.isDone ? Colors.grey : null,
+              ),
+            ),
+            subtitle: Text(
+              'Qtd: ${item.quantity} • Preço: R\$ ${item.price?.toStringAsFixed(2) ?? "-"}',
+            ),
+            trailing: Wrap(
+              spacing: 8,
+              children: [
+                IconButton(
+                  icon: Icon(
+                    item.isDone ? Icons.check_circle : Icons.radio_button_unchecked,
+                    color: item.isDone ? Colors.green : Colors.grey,
+                  ),
+                  onPressed: () {
+                    provider.toggleItemStatus(item);
+                  },
+                ),
+                IconButton(
+                  icon: const Icon(Icons.edit, color: Colors.blueAccent),
+                  onPressed: () => _editItem(context, item),
+                ),
+                IconButton(
+                  icon: const Icon(Icons.delete, color: Colors.redAccent),
+                  onPressed: () => provider.removeItem(item),
+                ),
+              ],
+            ),
+            onTap: () => _editItem(context, item),
+          ),
+        );
+      },
+    );
   }
 }

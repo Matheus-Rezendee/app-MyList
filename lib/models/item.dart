@@ -1,15 +1,17 @@
-/// Modelo para representar um item dentro de uma categoria
 class Item {
   final String id;
-  final String name;
-  final double price;
+  final String title;
   final int quantity;
-  bool isCompleted;
+  final double price;
+  final bool isDone;
+  final String categoryId;
 
   Item({
-    required this.name,
-    required this.price,
+    required this.id,
+    required this.title,
     required this.quantity,
-    this.isCompleted = false,
-  }) : id = DateTime.now().toIso8601String();
+    required this.price,
+    required this.isDone,
+    required this.categoryId,
+  });
 }

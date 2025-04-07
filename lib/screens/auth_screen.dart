@@ -1,8 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:provider/provider.dart';
-import '../providers/auth_provider.dart';
 
-/// Tela de autenticação reutilizável para Login/Registro
 class AuthScreen extends StatelessWidget {
   final bool isLogin;
   const AuthScreen({required this.isLogin, super.key});
@@ -10,187 +7,183 @@ class AuthScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        title: Text(isLogin ? 'Login' : 'Registro'),
-        backgroundColor: const Color(0xFF6C5CE7),
-        elevation: 0,
-        toolbarHeight: 100, // Aumentando a altura para dar um efeito mais moderno
-        flexibleSpace: Container(
-          decoration: BoxDecoration(
-            gradient: LinearGradient(
-              colors: [Color(0xFF6C5CE7), Color.fromARGB(255, 157, 69, 219)],
-              begin: Alignment.topLeft,
-              end: Alignment.bottomRight,
-            ),
-            borderRadius: const BorderRadius.only(
-              bottomLeft: Radius.circular(30),
-              bottomRight: Radius.circular(30),
-            ),
+      backgroundColor: const Color(0xFFEFF3F6),
+      body: Center(
+        child: SingleChildScrollView(
+          padding: const EdgeInsets.symmetric(horizontal: 24),
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              // Logo ou ícone do app
+              const Icon(
+                Icons.shopping_cart_outlined,
+                size: 72,
+                color: Color(0xFF2D6CDF), // azul elegante
+              ),
+              const SizedBox(height: 16),
+              Text(
+                isLogin ? 'Bem-vindo de volta' : 'Crie sua conta',
+                style: const TextStyle(
+                  fontSize: 26,
+                  fontWeight: FontWeight.w700,
+                  color: Color(0xFF1C1C1C),
+                ),
+              ),
+              const SizedBox(height: 32),
+              const _AuthForm(),
+              const SizedBox(height: 24),
+              TextButton(
+                onPressed: () {
+                  Navigator.pushReplacementNamed(
+                    context,
+                    isLogin ? '/register' : '/login',
+                  );
+                },
+                child: Text(
+                  isLogin
+                      ? 'Não tem conta? Cadastre-se'
+                      : 'Já tem uma conta? Entrar',
+                  style: const TextStyle(
+                    color: Color(0xFF2D6CDF),
+                    fontWeight: FontWeight.w600,
+                  ),
+                ),
+              ),
+            ],
           ),
         ),
-        titleTextStyle: TextStyle(
-          fontSize: 26,
-          fontWeight: FontWeight.bold,
-          color: Colors.white,
-        ),
       ),
-      body: AuthForm(isLogin: isLogin),
     );
   }
 }
 
-/// Formulário de autenticação
-class AuthForm extends StatefulWidget {
-  final bool isLogin;
-  const AuthForm({required this.isLogin, super.key});
+class _AuthForm extends StatefulWidget {
+  const _AuthForm({super.key});
 
   @override
-  State<AuthForm> createState() => _AuthFormState();
+  State<_AuthForm> createState() => _AuthFormState();
 }
 
-class _AuthFormState extends State<AuthForm> {
+class _AuthFormState extends State<_AuthForm> {
   final _formKey = GlobalKey<FormState>();
   final _emailController = TextEditingController();
   final _passwordController = TextEditingController();
 
+  bool _obscurePassword = true;
+
   @override
   Widget build(BuildContext context) {
-    return Center(
-      child: Padding(
-        padding: const EdgeInsets.symmetric(horizontal: 24),
-        child: Card(
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(16),
-          ),
-          elevation: 8,
-          child: Padding(
-            padding: const EdgeInsets.all(32),
-            child: Form(
-              key: _formKey,
-              child: Column(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  // Campo de Email
-                  _buildTextField(
-                    controller: _emailController,
-                    labelText: 'Email',
-                    icon: Icons.email_rounded,
-                    keyboardType: TextInputType.emailAddress,
-                    validator: (value) {
-                      if (value == null || value.isEmpty || !value.contains('@')) {
-                        return 'Email inválido';
-                      }
-                      return null;
-                    },
-                  ),
-                  const SizedBox(height: 20),
-
-                  // Campo de Senha
-                  _buildTextField(
-                    controller: _passwordController,
-                    labelText: 'Senha',
-                    icon: Icons.lock_rounded,
-                    obscureText: true,
-                    validator: (value) {
-                      if (value == null || value.isEmpty || value.length < 6) {
-                        return 'Mínimo 6 caracteres';
-                      }
-                      return null;
-                    },
-                  ),
-                  const SizedBox(height: 40),
-
-                  // Botão de Ação Principal
-                  ElevatedButton(
-                    onPressed: () {
-                      if (_formKey.currentState!.validate()) {
-                        context.read<AuthProvider>().login(
-                              _emailController.text,
-                              _passwordController.text,
-                            );
-                        Navigator.pushReplacementNamed(context, '/home');
-                      }
-                    },
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: const Color(0xFF6C5CE7),
-                      minimumSize: const Size(double.infinity, 50),
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(12),
-                      ),
-                      elevation: 5,
-                    ),
-                    child: Text(
-                      widget.isLogin ? 'Entrar' : 'Registrar',
-                      style: TextStyle(color: Colors.white),
-                    ),
-                  ),
-                  const SizedBox(height: 20),
-
-                  // Botão Secundário
-                  TextButton(
-                    onPressed: () => Navigator.pushNamed(
-                      context,
-                      widget.isLogin ? '/register' : '/login',
-                    ),
-                    style: TextButton.styleFrom(
-                      padding: EdgeInsets.zero,
-                      alignment: Alignment.center,
-                    ),
-                    child: Text(
-                      widget.isLogin 
-                        ? 'Criar nova conta' 
-                        : 'Já tem uma conta? Entrar',
-                      style: TextStyle(
-                        color: const Color(0xFF6C5CE7),
-                        fontWeight: FontWeight.bold,
-                      ),
-                    ),
-                  )
-                ],
+    return Form(
+      key: _formKey,
+      child: Container(
+        padding: const EdgeInsets.all(24),
+        decoration: BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.circular(20),
+          boxShadow: const [
+            BoxShadow(
+              color: Colors.black12,
+              blurRadius: 15,
+              offset: Offset(0, 6),
+            )
+          ],
+        ),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            _buildInput(
+              label: 'Email',
+              controller: _emailController,
+              icon: Icons.mail_outline,
+              keyboardType: TextInputType.emailAddress,
+              validator: (value) {
+                if (value == null || !value.contains('@')) {
+                  return 'Digite um email válido';
+                }
+                return null;
+              },
+            ),
+            const SizedBox(height: 20),
+            _buildInput(
+              label: 'Senha',
+              controller: _passwordController,
+              icon: Icons.lock_outline,
+              obscureText: _obscurePassword,
+              suffixIcon: IconButton(
+                icon: Icon(
+                  _obscurePassword ? Icons.visibility : Icons.visibility_off,
+                  color: Colors.grey,
+                ),
+                onPressed: () {
+                  setState(() {
+                    _obscurePassword = !_obscurePassword;
+                  });
+                },
+              ),
+              validator: (value) {
+                if (value == null || value.length < 6) {
+                  return 'Senha deve ter pelo menos 6 caracteres';
+                }
+                return null;
+              },
+            ),
+            const SizedBox(height: 30),
+            ElevatedButton(
+              onPressed: () {
+                if (_formKey.currentState!.validate()) {
+                  Navigator.pushReplacementNamed(context, '/home');
+                }
+              },
+              style: ElevatedButton.styleFrom(
+                backgroundColor: const Color(0xFF2D6CDF),
+                minimumSize: const Size(double.infinity, 50),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(12),
+                ),
+                elevation: 4,
+              ),
+              child: const Text(
+                'Entrar',
+                style: TextStyle(color: Colors.white, fontSize: 16),
               ),
             ),
-          ),
+          ],
         ),
       ),
     );
   }
 
-  // Método para construir campos de texto reutilizáveis
-  Widget _buildTextField({
+  Widget _buildInput({
+    required String label,
     required TextEditingController controller,
-    required String labelText,
     required IconData icon,
     bool obscureText = false,
+    Widget? suffixIcon,
     TextInputType keyboardType = TextInputType.text,
     String? Function(String?)? validator,
   }) {
     return TextFormField(
       controller: controller,
-      decoration: InputDecoration(
-        labelText: labelText,
-        labelStyle: TextStyle(
-          color: Colors.grey[600],
-        ),
-        prefixIcon: Icon(icon, color: Colors.grey[600]),
-        filled: true,
-        fillColor: Colors.white,
-        border: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(12),
-          borderSide: BorderSide.none,
-        ),
-        contentPadding: const EdgeInsets.symmetric(vertical: 15, horizontal: 20),
-        focusedBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(12),
-          borderSide: const BorderSide(color: Color(0xFF6C5CE7), width: 2),
-        ),
-        enabledBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(12),
-          borderSide: BorderSide(color: Colors.grey[400]!, width: 1),
-        ),
-      ),
       obscureText: obscureText,
       keyboardType: keyboardType,
       validator: validator,
+      decoration: InputDecoration(
+        prefixIcon: Icon(icon, color: Colors.grey[600]),
+        suffixIcon: suffixIcon,
+        labelText: label,
+        labelStyle: const TextStyle(color: Colors.grey),
+        filled: true,
+        fillColor: const Color(0xFFF7F9FC),
+        contentPadding: const EdgeInsets.symmetric(vertical: 18, horizontal: 20),
+        border: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(14),
+          borderSide: BorderSide.none,
+        ),
+        focusedBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(14),
+          borderSide: const BorderSide(color: Color(0xFF2D6CDF), width: 2),
+        ),
+      ),
     );
   }
 }

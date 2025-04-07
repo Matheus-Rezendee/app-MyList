@@ -25,7 +25,7 @@ class MyApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-      title: 'Listify Pro',
+      title: 'My List',
       debugShowCheckedModeBanner: false,
       theme: _buildTheme(),
       initialRoute: '/splash',
