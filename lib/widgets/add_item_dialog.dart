@@ -44,9 +44,8 @@ class _AddItemDialogState extends State<AddItemDialog> {
   if (_formKey.currentState!.validate()) {
     final title = _titleController.text.trim();
     final quantity = int.tryParse(_quantityController.text.trim()) ?? 1;
-
     final priceText = _priceController.text.trim().replaceAll(',', '.');
-    final price = double.tryParse(priceText) ?? 0.0; // ✅ Corrigido aqui
+    final price = double.tryParse(priceText) ?? 0.0;
 
     final item = Item(
       id: widget.existingItem?.id ?? UniqueKey().toString(),
@@ -55,11 +54,15 @@ class _AddItemDialogState extends State<AddItemDialog> {
       price: price,
       categoryId: widget.categoryId,
       isDone: widget.existingItem?.isDone ?? false,
+      userId: widget.existingItem?.userId ?? 'default_user', // 🔁 substitua pelo usuário real se tiver
+      createdAt: widget.existingItem?.createdAt ?? DateTime.now(),
+      updatedAt: widget.existingItem != null ? DateTime.now() : null,
     );
 
     Navigator.of(context).pop(item);
   }
 }
+
 
 
 

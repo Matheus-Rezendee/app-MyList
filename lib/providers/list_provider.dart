@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:hive/hive.dart';
 import '../models/item.dart';
 import '../models/category.dart';
 
@@ -19,65 +20,92 @@ class ListProvider with ChangeNotifier {
     });
   }
 
+  Future<void> loadData() async {
+    final itemBox = await Hive.openBox<Item>('items');
+    final categoryBox = await Hive.openBox<Category>('categories');
+
+    _items.clear();
+    _categories.clear();
+
+    _items.addAll(itemBox.values);
+    _categories.addAll(categoryBox.values);
+
+    notifyListeners();
+  }
+
   // ----------------- Categorias ------------------
-  void addCategory(Category category) {
+  void addCategory(Category category) async {
     _categories.add(category);
+    final box = await Hive.openBox<Category>('categories');
+    await box.put(category.id, category);
     notifyListeners();
   }
 
-  void removeCategory(Category category) {
+  void removeCategory(Category category) async {
     _categories.removeWhere((cat) => cat.id == category.id);
-    removeItemsFromCategory(category);
-    notifyListeners();
-  }
+    final categoryBox = await Hive.openBox<Category>('categories');
+    final itemBox = await Hive.openBox<Item>('items');
 
-  void removeCategoryById(String categoryId) {
-    _categories.removeWhere((cat) => cat.id == categoryId);
-    _items.removeWhere((item) => item.categoryId == categoryId);
+    await categoryBox.delete(category.id);
+    _items.removeWhere((item) => item.categoryId == category.id);
+    for (var key in itemBox.keys) {
+      final item = itemBox.get(key);
+      if (item != null && item.categoryId == category.id) {
+        await itemBox.delete(key);
+      }
+    }
+
     notifyListeners();
   }
 
   // ----------------- Itens ------------------
-  void addItem(Item item) {
+  void addItem(Item item) async {
     _items.add(item);
+    final box = await Hive.openBox<Item>('items');
+    await box.put(item.id, item);
     notifyListeners();
   }
 
-  void removeItem(Item item) {
+  void removeItem(Item item) async {
     _items.remove(item);
+    final box = await Hive.openBox<Item>('items');
+    await box.delete(item.id);
     notifyListeners();
   }
 
-  void removeItemsFromCategory(Category category) {
-    _items.removeWhere((item) => item.categoryId == category.id);
-    notifyListeners();
-  }
-
-  List<Item> getItemsByCategory(Category category) {
-    return _items.where((item) => item.categoryId == category.id).toList();
-  }
-
-  void toggleItemStatus(Item item) {
+  void toggleItemStatus(Item item) async {
     final index = _items.indexWhere((i) => i.id == item.id);
     if (index != -1) {
-      _items[index] = Item(
-        id: _items[index].id,
-        title: _items[index].title,
-        quantity: _items[index].quantity,
-        price: _items[index].price,
-        isDone: !_items[index].isDone,
-        categoryId: _items[index].categoryId,
+      final updatedItem = Item(
+        id: item.id,
+        title: item.title,
+        quantity: item.quantity,
+        price: item.price,
+        isDone: !item.isDone,
+        categoryId: item.categoryId,
+        userId: item.userId,
+        createdAt: item.createdAt,
+        updatedAt: DateTime.now(), // Atualiza a data de modificação
       );
+
+      _items[index] = updatedItem;
+      final box = await Hive.openBox<Item>('items');
+      await box.put(item.id, updatedItem);
       notifyListeners();
     }
   }
 
-  // ----------------- Método de Atualização de Itens ------------------
-  void updateItem(Item updatedItem) {
+  void updateItem(Item updatedItem) async {
     final index = _items.indexWhere((item) => item.id == updatedItem.id);
     if (index != -1) {
       _items[index] = updatedItem;
-      notifyListeners();  // Notifica os listeners que a lista foi alterada
+      final box = await Hive.openBox<Item>('items');
+      await box.put(updatedItem.id, updatedItem);
+      notifyListeners();
     }
+  }
+
+  List<Item> getItemsByCategory(Category category) {
+    return _items.where((item) => item.categoryId == category.id).toList();
   }
 }

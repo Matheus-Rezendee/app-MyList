@@ -1,10 +1,11 @@
 import 'package:flutter/material.dart';
+import 'package:my_list/screens/category_screen.dart';
 import 'package:provider/provider.dart';
 import 'package:uuid/uuid.dart';
 import '../models/category.dart';
 import '../providers/list_provider.dart';
+import '../screens/category_screen.dart'; // Importe a tela de detalhes da categoria
 
-/// Diálogo para criar nova categoria
 class CategoryCreationDialog extends StatefulWidget {
   const CategoryCreationDialog({super.key});
 
@@ -78,7 +79,8 @@ class _CategoryCreationDialogState extends State<CategoryCreationDialog> {
                         ? _selectedColor
                         : Colors.grey,
                   ),
-                  onPressed: () => setState(() => _selectedIcon = _icons[index]),
+                  onPressed: () =>
+                      setState(() => _selectedIcon = _icons[index]),
                 ),
               ),
               const SizedBox(height: 24),
@@ -131,15 +133,27 @@ class _CategoryCreationDialogState extends State<CategoryCreationDialog> {
                     child: FilledButton(
                       onPressed: () {
                         if (_nameController.text.isNotEmpty) {
-                          context.read<ListProvider>().addCategory(
-                                Category(
-                                  id: uuid.v4(), // Gerando o ID único aqui
-                                  name: _nameController.text,
-                                  icon: _selectedIcon,
-                                  color: _selectedColor,
-                                ),
-                              );
+                          final newCategory = Category(
+                            id: uuid.v4(),
+                            name: _nameController.text,
+                            iconCodePoint: _selectedIcon.codePoint,
+                            colorValue: _selectedColor.value,
+                            imageUrl: '',
+                          );
+
+                          context.read<ListProvider>().addCategory(newCategory);
                           Navigator.pop(context);
+
+                          // Navega para a nova categoria depois de um pequeno atraso
+                          Future.delayed(const Duration(milliseconds: 300), () {
+                            Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                builder: (_) =>
+                                    CategoryScreen(category: newCategory),
+                              ),
+                            );
+                          });
                         }
                       },
                       child: const Text('Criar'),

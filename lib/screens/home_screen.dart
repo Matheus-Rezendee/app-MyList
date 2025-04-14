@@ -3,9 +3,31 @@ import 'package:provider/provider.dart';
 import '../providers/list_provider.dart';
 import '../widgets/category_card.dart';
 import '../widgets/category_creation_dialog.dart';
+import '../screens/category_screen.dart';
 
-class HomeScreen extends StatelessWidget {
+class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
+
+  @override
+  State<HomeScreen> createState() => _HomeScreenState();
+}
+
+class _HomeScreenState extends State<HomeScreen> {
+  bool _isLoading = true;
+
+  @override
+  void initState() {
+    super.initState();
+    _loadDataOnStart();
+  }
+
+  Future<void> _loadDataOnStart() async {
+    final provider = Provider.of<ListProvider>(context, listen: false);
+    await provider.loadData();
+    setState(() {
+      _isLoading = false;
+    });
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -13,7 +35,7 @@ class HomeScreen extends StatelessWidget {
     final categories = listProvider.categories;
 
     return Scaffold(
-      drawer: _buildDrawer(context),
+      endDrawer: _buildDrawer(context),
       body: Stack(
         children: [
           Column(
@@ -22,68 +44,85 @@ class HomeScreen extends StatelessWidget {
               Expanded(
                 child: Padding(
                   padding: const EdgeInsets.all(16),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      const SizedBox(height: 16),
-                      _buildQuote(),
-                      const SizedBox(height: 24),
-                      _buildSummaryCards(listProvider),
-                      const SizedBox(height: 24),
-                      Expanded(
-                        child: categories.isEmpty
-                            ? const Center(
-                                child: Text(
-                                  'Nenhuma lista criada ainda.\nToque no botão abaixo para começar.',
-                                  textAlign: TextAlign.center,
-                                  style: TextStyle(
-                                    fontSize: 16,
-                                    color: Colors.grey,
-                                  ),
-                                ),
-                              )
-                            : GridView.builder(
-                                itemCount: categories.length,
-                                gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-                                  crossAxisCount: 2,
-                                  crossAxisSpacing: 16,
-                                  mainAxisSpacing: 16,
-                                  childAspectRatio: 1.1,
-                                ),
-                                itemBuilder: (context, index) {
-                                  return CategoryCard(
-                                    category: categories[index],
-                                  );
-                                },
-                              ),
-                      ),
-                    ],
-                  ),
+                  child: _isLoading
+                      ? const Center(child: CircularProgressIndicator())
+                      : Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            const SizedBox(height: 16),
+                            _buildQuote(),
+                            const SizedBox(height: 24),
+                            _buildSummaryCards(listProvider),
+                            const SizedBox(height: 24),
+                            Expanded(
+                              child: categories.isEmpty
+                                  ? const Center(
+                                      child: Text(
+                                        'Nenhuma lista criada ainda.\nToque no botão abaixo para começar.',
+                                        textAlign: TextAlign.center,
+                                        style: TextStyle(
+                                          fontSize: 16,
+                                          color: Colors.grey,
+                                        ),
+                                      ),
+                                    )
+                                  : GridView.builder(
+                                      itemCount: categories.length,
+                                      gridDelegate:
+                                          const SliverGridDelegateWithFixedCrossAxisCount(
+                                        crossAxisCount: 2,
+                                        crossAxisSpacing: 16,
+                                        mainAxisSpacing: 16,
+                                        childAspectRatio: 1.1,
+                                      ),
+                                      itemBuilder: (context, index) {
+                                        final category = categories[index];
+                                        return GestureDetector(
+                                          onTap: () {
+                                            Navigator.push(
+                                              context,
+                                              MaterialPageRoute(
+                                                builder: (_) =>
+                                                    CategoryScreen(
+                                                  category: category,
+                                                ),
+                                              ),
+                                            );
+                                          },
+                                          child: CategoryCard(
+                                            category: category,
+                                          ),
+                                        );
+                                      },
+                                    ),
+                            ),
+                          ],
+                        ),
                 ),
               ),
             ],
           ),
           Positioned(
             top: 40,
-            left: 16,
+            right: 16,
             child: Builder(
               builder: (context) => InkWell(
                 borderRadius: BorderRadius.circular(32),
-                onTap: () => Scaffold.of(context).openDrawer(),
+                onTap: () => Scaffold.of(context).openEndDrawer(),
                 child: Container(
                   padding: const EdgeInsets.all(10),
                   decoration: BoxDecoration(
-                    color: Colors.white,
+                    color: Colors.transparent,
                     shape: BoxShape.circle,
                     boxShadow: [
                       BoxShadow(
-                        color: Colors.black.withOpacity(0.05),
+                        color: Colors.black.withOpacity(0.1),
                         blurRadius: 8,
                         offset: const Offset(0, 3),
-                      )
+                      ),
                     ],
                   ),
-                  child: const Icon(Icons.menu, color: Colors.black87),
+                  child: const Icon(Icons.menu, color: Colors.white),
                 ),
               ),
             ),
@@ -125,20 +164,27 @@ class HomeScreen extends StatelessWidget {
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
-        children: const [
-          SizedBox(height: 32),
+        children: [
+          const SizedBox(height: 32),
           Text(
             'Olá, Matheus 👋',
             style: TextStyle(
-              fontSize: 24,
+              fontSize: 26,
               fontWeight: FontWeight.bold,
               color: Colors.white,
+              shadows: [
+                Shadow(
+                  blurRadius: 10.0,
+                  color: Colors.black.withOpacity(0.2),
+                  offset: const Offset(2.0, 2.0),
+                ),
+              ],
             ),
           ),
-          SizedBox(height: 8),
-          Text(
+          const SizedBox(height: 8),
+          const Text(
             'Vamos deixar suas compras organizadas hoje?',
-            style: TextStyle(fontSize: 16, color: Colors.white70),
+            style: TextStyle(fontSize: 18, color: Colors.white70),
           ),
         ],
       ),
@@ -157,36 +203,32 @@ class HomeScreen extends StatelessWidget {
   }
 
   Widget _buildSummaryCards(ListProvider provider) {
-    return Row(
-      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-      children: [
-        Expanded(
-          child: _buildStatCard(
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 8),
+      child: Column(
+        children: [
+          _buildStatCard(
             title: 'Total de Listas',
             value: '${provider.totalLists}',
             icon: Icons.list_alt_rounded,
             color: const Color(0xFF6C5CE7),
           ),
-        ),
-        const SizedBox(width: 12),
-        Expanded(
-          child: _buildStatCard(
+          const SizedBox(height: 16),
+          _buildStatCard(
             title: 'Total de Itens',
             value: '${provider.totalItems}',
             icon: Icons.check_circle_rounded,
             color: const Color(0xFF00CEC9),
           ),
-        ),
-        const SizedBox(width: 12),
-        Expanded(
-          child: _buildStatCard(
+          const SizedBox(height: 16),
+          _buildStatCard(
             title: 'Total R\$',
             value: provider.totalValue.toStringAsFixed(2),
             icon: Icons.attach_money_rounded,
             color: const Color(0xFFFFC107),
           ),
-        ),
-      ],
+        ],
+      ),
     );
   }
 
@@ -200,29 +242,34 @@ class HomeScreen extends StatelessWidget {
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
         color: color.withOpacity(0.1),
-        borderRadius: BorderRadius.circular(20),
+        borderRadius: BorderRadius.circular(12),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.1),
+            blurRadius: 6,
+            offset: const Offset(0, 3),
+          ),
+        ],
       ),
       child: Row(
         children: [
-          CircleAvatar(
-            backgroundColor: color,
-            child: Icon(icon, color: Colors.white),
-          ),
-          const SizedBox(width: 12),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  value,
-                  style: const TextStyle(
-                    fontSize: 18,
-                    fontWeight: FontWeight.bold,
-                  ),
+          Icon(icon, color: color, size: 32),
+          const SizedBox(width: 16),
+          Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                title,
+                style: const TextStyle(
+                  fontSize: 16,
+                  fontWeight: FontWeight.bold,
                 ),
-                Text(title),
-              ],
-            ),
+              ),
+              Text(
+                value,
+                style: const TextStyle(fontSize: 18),
+              ),
+            ],
           ),
         ],
       ),
@@ -231,41 +278,18 @@ class HomeScreen extends StatelessWidget {
 
   Widget _buildDrawer(BuildContext context) {
     return Drawer(
-      child: Column(
-        children: [
+      child: ListView(
+        padding: EdgeInsets.zero,
+        children: const [
           DrawerHeader(
-            decoration: const BoxDecoration(
-              gradient: LinearGradient(
-                colors: [Color(0xFF6C5CE7), Color(0xFF341f97)],
-              ),
+            decoration: BoxDecoration(
+              color: Colors.blue,
             ),
-            child: Row(
-              children: const [
-                Icon(Icons.shopping_cart_rounded, color: Colors.white, size: 32),
-                SizedBox(width: 12),
-                Text(
-                  'Meu App de Compras',
-                  style: TextStyle(
-                    color: Colors.white,
-                    fontSize: 18,
-                  ),
-                )
-              ],
-            ),
+            child: Text('Menu'),
           ),
           ListTile(
-            leading: const Icon(Icons.info_outline_rounded),
-            title: const Text('Sobre o App'),
-            onTap: () {
-              Navigator.pop(context);
-            },
-          ),
-          ListTile(
-            leading: const Icon(Icons.settings_rounded),
-            title: const Text('Configurações'),
-            onTap: () {
-              Navigator.pop(context);
-            },
+            title: Text('Configurações'),
+            onTap: null,
           ),
         ],
       ),

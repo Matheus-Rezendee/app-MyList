@@ -43,99 +43,118 @@ class CategoryScreen extends StatelessWidget {
     final pendingItems = items.where((item) => !item.isDone).toList();
     final completedItems = items.where((item) => item.isDone).toList();
 
+    final hasItems = items.isNotEmpty;
+
     return Scaffold(
       appBar: AppBar(
         title: Text(category.name),
         backgroundColor: const Color(0xFF6C5CE7),
       ),
-      body: items.isEmpty
-          ? const Center(child: Text('Nenhum item adicionado ainda.'))
-          : Padding(
-              padding: const EdgeInsets.all(12),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  if (pendingItems.isNotEmpty)
-                    _buildSectionTitle('Pendentes'),
-                  ...pendingItems.map((item) => _buildItemTile(context, item, listProvider)),
-                  if (completedItems.isNotEmpty) ...[
-                    const SizedBox(height: 20),
-                    _buildSectionTitle('Concluídos'),
-                    ...completedItems.map((item) => _buildItemTile(context, item, listProvider)),
-                  ],
-                ],
-              ),
-            ),
+      body: hasItems
+          ? ListView(
+              children: [
+                _buildItemsSection(context, pendingItems, 'Pendentes', false),
+                const SizedBox(height: 16),
+                _buildItemsSection(context, completedItems, 'Concluídos', true),
+              ],
+            )
+          : _buildEmptyState(),
       floatingActionButton: FloatingActionButton(
         onPressed: () => _addItem(context),
-        backgroundColor: const Color(0xFF6C5CE7),
         child: const Icon(Icons.add),
+        backgroundColor: const Color(0xFF6C5CE7),
       ),
     );
   }
 
-  Widget _buildSectionTitle(String title) {
-    return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 8),
-      child: Text(
-        title,
-        style: const TextStyle(
-          fontSize: 18,
-          fontWeight: FontWeight.bold,
+  Widget _buildEmptyState() {
+    return Center(
+      child: Padding(
+        padding: const EdgeInsets.all(32.0),
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            const Icon(Icons.shopping_cart_outlined, size: 80, color: Colors.grey),
+            const SizedBox(height: 16),
+            const Text(
+              'Nenhum item aqui ainda!',
+              style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+            ),
+            const SizedBox(height: 8),
+            const Text(
+              'Toque no botão + para adicionar um item à lista.',
+              textAlign: TextAlign.center,
+              style: TextStyle(color: Colors.grey),
+            ),
+          ],
         ),
       ),
     );
   }
 
-  Widget _buildItemTile(BuildContext context, Item item, ListProvider provider) {
-    return FutureBuilder<String?>(
-      future: UnsplashService.fetchImageUrl(item.title),
-      builder: (context, snapshot) {
-        return Card(
-          child: ListTile(
-            leading: CircleAvatar(
-              backgroundImage: snapshot.hasData
-                  ? NetworkImage(snapshot.data!)
-                  : const AssetImage('assets/images/placeholder.png')
-                      as ImageProvider,
-              backgroundColor: Colors.grey[200],
+  Widget _buildItemsSection(
+    BuildContext context,
+    List<Item> items,
+    String title,
+    bool isCompleted,
+  ) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 16),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            title,
+            style: const TextStyle(
+              fontSize: 20,
+              fontWeight: FontWeight.bold,
+              color: Color(0xFF6C5CE7),
             ),
-            title: Text(
-              item.title,
-              style: TextStyle(
-                decoration: item.isDone ? TextDecoration.lineThrough : null,
-                color: item.isDone ? Colors.grey : null,
-              ),
-            ),
-            subtitle: Text(
-              'Qtd: ${item.quantity} • Preço: R\$ ${item.price?.toStringAsFixed(2) ?? "-"}',
-            ),
-            trailing: Wrap(
-              spacing: 8,
-              children: [
-                IconButton(
-                  icon: Icon(
-                    item.isDone ? Icons.check_circle : Icons.radio_button_unchecked,
-                    color: item.isDone ? Colors.green : Colors.grey,
-                  ),
-                  onPressed: () {
-                    provider.toggleItemStatus(item);
-                  },
-                ),
-                IconButton(
-                  icon: const Icon(Icons.edit, color: Colors.blueAccent),
-                  onPressed: () => _editItem(context, item),
-                ),
-                IconButton(
-                  icon: const Icon(Icons.delete, color: Colors.redAccent),
-                  onPressed: () => provider.removeItem(item),
-                ),
-              ],
-            ),
-            onTap: () => _editItem(context, item),
           ),
-        );
-      },
+          const SizedBox(height: 8),
+          Column(
+            children: items.map((item) {
+              return FutureBuilder<String?>(
+                future: UnsplashService.fetchImageUrl(query: item.title),
+                builder: (context, snapshot) {
+                  final image = snapshot.data;
+
+                  return Card(
+                    margin: const EdgeInsets.symmetric(vertical: 8),
+                    elevation: 3,
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                    child: ListTile(
+                      contentPadding: const EdgeInsets.all(12),
+                      leading: ClipRRect(
+                        borderRadius: BorderRadius.circular(8),
+                        child: image != null
+                            ? Image.network(image, width: 50, height: 50, fit: BoxFit.cover)
+                            : const Icon(Icons.image, size: 40),
+                      ),
+                      title: Text(item.title, style: const TextStyle(fontWeight: FontWeight.bold)),
+                      subtitle: Text(
+                        'Qtd: ${item.quantity}  •  R\$ ${item.price.toStringAsFixed(2)}',
+                        style: const TextStyle(color: Colors.grey),
+                      ),
+                      trailing: IconButton(
+                        icon: Icon(isCompleted ? Icons.undo : Icons.check),
+                        color: isCompleted ? Colors.grey : Colors.green,
+                        onPressed: () {
+                          item.toggleIsDone();
+                          Provider.of<ListProvider>(context, listen: false).updateItem(item);
+                        },
+                      ),
+                      onTap: () => _editItem(context, item),
+                    ),
+                  );
+                },
+              );
+            }).toList(),
+          ),
+        ],
+      ),
     );
   }
 }

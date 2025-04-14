@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 class AuthScreen extends StatelessWidget {
   final bool isLogin;
@@ -14,7 +15,6 @@ class AuthScreen extends StatelessWidget {
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              // Logo ou ícone do app
               const Icon(
                 Icons.shopping_cart_outlined,
                 size: 72,
@@ -71,6 +71,31 @@ class _AuthFormState extends State<_AuthForm> {
 
   bool _obscurePassword = true;
 
+  String? emailValidator(String? value) {
+    if (value == null || value.isEmpty) {
+      return 'Campo obrigatório';
+    }
+    final emailRegExp = RegExp(r'^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$');
+    if (!emailRegExp.hasMatch(value)) {
+      return 'Digite um email válido';
+    }
+    return null;
+  }
+
+  String? passwordValidator(String? value) {
+    if (value == null || value.isEmpty) {
+      return 'Campo obrigatório';
+    }
+    if (value.length < 6) {
+      return 'A senha deve ter pelo menos 6 caracteres';
+    }
+    final passwordRegExp = RegExp(r'^(?=.*[A-Za-z])(?=.*\d)[A-Za-z\d]{6,}$');
+    if (!passwordRegExp.hasMatch(value)) {
+      return 'Senha deve conter letras e números';
+    }
+    return null;
+  }
+
   @override
   Widget build(BuildContext context) {
     return Form(
@@ -96,12 +121,7 @@ class _AuthFormState extends State<_AuthForm> {
               controller: _emailController,
               icon: Icons.mail_outline,
               keyboardType: TextInputType.emailAddress,
-              validator: (value) {
-                if (value == null || !value.contains('@')) {
-                  return 'Digite um email válido';
-                }
-                return null;
-              },
+              validator: emailValidator,
             ),
             const SizedBox(height: 20),
             _buildInput(
@@ -120,17 +140,15 @@ class _AuthFormState extends State<_AuthForm> {
                   });
                 },
               ),
-              validator: (value) {
-                if (value == null || value.length < 6) {
-                  return 'Senha deve ter pelo menos 6 caracteres';
-                }
-                return null;
-              },
+              validator: passwordValidator,
             ),
             const SizedBox(height: 30),
             ElevatedButton(
-              onPressed: () {
+              onPressed: () async {
                 if (_formKey.currentState!.validate()) {
+                  SharedPreferences prefs = await SharedPreferences.getInstance();
+                  await prefs.setBool('isLoggedIn', true);
+                  await prefs.setString('email', _emailController.text);
                   Navigator.pushReplacementNamed(context, '/home');
                 }
               },
@@ -168,20 +186,11 @@ class _AuthFormState extends State<_AuthForm> {
       keyboardType: keyboardType,
       validator: validator,
       decoration: InputDecoration(
-        prefixIcon: Icon(icon, color: Colors.grey[600]),
-        suffixIcon: suffixIcon,
         labelText: label,
-        labelStyle: const TextStyle(color: Colors.grey),
-        filled: true,
-        fillColor: const Color(0xFFF7F9FC),
-        contentPadding: const EdgeInsets.symmetric(vertical: 18, horizontal: 20),
+        prefixIcon: Icon(icon),
+        suffixIcon: suffixIcon,
         border: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(14),
-          borderSide: BorderSide.none,
-        ),
-        focusedBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(14),
-          borderSide: const BorderSide(color: Color(0xFF2D6CDF), width: 2),
+          borderRadius: BorderRadius.circular(12),
         ),
       ),
     );
